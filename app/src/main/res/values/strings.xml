@@ -83,6 +83,7 @@
 
     <!-- Errors -->
     <string name="error_empty_credentials">Please enter your email and password.</string>
+    <string name="error_password_match">Passwords do not match</string>
 
     <!-- Media -->
     <string name="media_unknown_author">Unknown Author</string>
