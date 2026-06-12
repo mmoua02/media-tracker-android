@@ -1,6 +1,5 @@
 package edu.metrostate.ics342.mediatracker.ui.auth
 
-import androidx.compose.runtime.annotation.FrequentlyChangingValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import edu.metrostate.ics342.mediatracker.R
@@ -22,6 +21,7 @@ class RegisterViewModel : ViewModel () {
 
         data class Error(val msgResId: Int) : RegisterUiState()
     }
+
     private val _displayName = MutableStateFlow("")
 
     val displayName: StateFlow<String> = _displayName.asStateFlow()
@@ -46,6 +46,7 @@ class RegisterViewModel : ViewModel () {
 
     val registerState: StateFlow<RegisterUiState> = _registerState.asStateFlow()
 
+
     fun onDisplayNameChange(value: String)      { _displayName.value = value }
     fun onUsernameChange(value: String)         { _username.value = value }
     fun onEmailChange(value: String)            { _email.value = value }
@@ -64,7 +65,7 @@ class RegisterViewModel : ViewModel () {
                     _confirmPassword.value.isBlank()
 
             if (hasEmptyFields) {
-                _registerState.value = RegisterUiState.Error(R.string.error_empty_credentials)
+                _registerState.value = RegisterUiState.Error(R.string.error_empty_fields)
                 return@launch
             }
 

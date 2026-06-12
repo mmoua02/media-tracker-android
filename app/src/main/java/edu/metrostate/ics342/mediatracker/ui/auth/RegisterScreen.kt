@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.sensitiveContent
@@ -41,10 +44,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import edu.metrostate.ics342.mediatracker.R
 import edu.metrostate.ics342.mediatracker.theme.OnPrimaryContainer
 import edu.metrostate.ics342.mediatracker.theme.OnSurface
 import edu.metrostate.ics342.mediatracker.theme.PrimaryContainer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.SmartDisplay
 
 
 @Composable
@@ -60,64 +68,50 @@ fun RegisterScreen(
     val password        by viewModel.password.collectAsState()
     val confirmPassword by viewModel.confirmPassword.collectAsState()
     val registerState   by viewModel.registerState.collectAsState()
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(registerState) {
-        if registerState is AuthViewModel.AuthUiState.Success) {
+        if (registerState is RegisterViewModel.RegisterUiState.Success) {
             viewModel.resetRegisterState()
-            onLoginSuccess()
+            onRegisterSuccess()
         }
     }
 
-    val isLoading = registerState is AuthViewModel.AuthUiState.Loading
-    val errorMsg = (registerState as? AuthViewModel.AuthUiState.Error)?.msgResId?.let { stringResource(it) }
-
-    /*
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(
-            text = stringResource(edu.metrostate.ics342.mediatracker.R.string.register_not_implemented),
-            style = MaterialTheme.typography.bodyLarge
-        )
-    }
-    */
+    val isLoading = registerState is RegisterViewModel.RegisterUiState.Loading
+    val errorMsg = (registerState as? RegisterViewModel.RegisterUiState.Error)?.msgResId?.let { stringResource(it) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement   = Arrangement.Center,
         horizontalAlignment   = Alignment.CenterHorizontally
     ) {
-        Image(
-            painterResource(R.drawable.smart_display),
-            contentDescription = "Application Icon",
-            modifier = Modifier
-                .size(width = 64.dp, height = 64.dp)
-                .background(color = PrimaryContainer, shape = RoundedCornerShape(12.dp))
-                .padding(12.dp),
-            colorFilter = ColorFilter.tint(OnPrimaryContainer)
-        )
 
-        Text("Create Account")
-        SecureTextField(
-            state = TextFieldState(),
-            modifier = Modifier,
-            placeholder = {Text("Password")}
+        Icon(
+            imageVector             = Icons.Filled.SmartDisplay,
+            contentDescription      = null,
+            tint                    = MaterialTheme.colorScheme.primary,
+            modifier                = Modifier.size(48.dp)
         )
-        SecureTextField(
-            state = TextFieldState(),
-            modifier = Modifier,
-            placeholder = {Text("Confirm Password")}
-        )
-
-        Text(stringResource(edu.metrostate.ics342.mediatracker.R.string.app_name), style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary)
 
         Spacer(Modifier.height(8.dp))
 
-        Text(stringResource(edu.metrostate.ics342.mediatracker.R.string.app_tagline),
+        Text(
+            text = stringResource(edu.metrostate.ics342.mediatracker.R.string.register_title),
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        Text(
+            text = stringResource(edu.metrostate.ics342.mediatracker.R.string.register_tagline),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center)
+            textAlign = TextAlign.Center
+        )
 
         Spacer(Modifier.height(40.dp))
 
@@ -125,7 +119,7 @@ fun RegisterScreen(
         OutlinedTextField(
             value         = displayName,
             onValueChange = viewModel::onDisplayNameChange,
-            label         = { Text(stringResource(edu.metrostate.ics342.mediatracker.R.string.display_name_label)) },
+            label         = { Text(stringResource(R.string.display_name_label)) },
             singleLine    = true,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,

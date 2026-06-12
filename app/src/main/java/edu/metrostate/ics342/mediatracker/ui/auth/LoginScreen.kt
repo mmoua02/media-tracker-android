@@ -3,6 +3,8 @@ package edu.metrostate.ics342.mediatracker.ui.auth
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SmartDisplay
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,6 +49,15 @@ fun LoginScreen(
         verticalArrangement   = Arrangement.Center,
         horizontalAlignment   = Alignment.CenterHorizontally
     ) {
+        Icon(
+            imageVector             = Icons.Filled.SmartDisplay,
+            contentDescription      = null,
+            tint                    = MaterialTheme.colorScheme.primary,
+            modifier                = Modifier.size(48.dp)
+        )
+
+        Spacer(Modifier.height(8.dp))
+
         Text(stringResource(edu.metrostate.ics342.mediatracker.R.string.app_name), style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.primary)
 
