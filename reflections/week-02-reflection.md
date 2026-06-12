@@ -1,4 +1,4 @@
-# Week {{N}} Reflection
+# Week 02 Reflection
 
 **Name:** Mai Moua
 **Date:** May 28, 2026
