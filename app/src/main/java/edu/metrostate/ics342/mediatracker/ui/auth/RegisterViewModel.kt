@@ -3,21 +3,25 @@ package edu.metrostate.ics342.mediatracker.ui.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import edu.metrostate.ics342.mediatracker.R
+import edu.metrostate.ics342.mediatracker.data.repository.UserRepository
+import edu.metrostate.ics342.mediatracker.data.network.DefaultUserRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class RegisterViewModel : ViewModel () {
+class RegisterViewModel (
+    private val userRepository: UserRepository = DefaultUserRepository()
+): ViewModel() {
 
     sealed class RegisterUiState {
 
-        object Idle     : RegisterUiState()
+        data object Idle     : RegisterUiState()
 
-        object Loading  : RegisterUiState()
+        data object Loading  : RegisterUiState()
 
-        object Success  : RegisterUiState()
+        data object Success  : RegisterUiState()
 
         data class Error(val msgResId: Int) : RegisterUiState()
     }

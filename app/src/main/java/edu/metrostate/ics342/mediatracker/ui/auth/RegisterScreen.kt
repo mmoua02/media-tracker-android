@@ -68,6 +68,7 @@ fun RegisterScreen(
     val password        by viewModel.password.collectAsState()
     val confirmPassword by viewModel.confirmPassword.collectAsState()
     val registerState   by viewModel.registerState.collectAsState()
+
     val focusManager = LocalFocusManager.current
 
     LaunchedEffect(registerState) {
@@ -78,7 +79,8 @@ fun RegisterScreen(
     }
 
     val isLoading = registerState is RegisterViewModel.RegisterUiState.Loading
-    val errorMsg = (registerState as? RegisterViewModel.RegisterUiState.Error)?.msgResId?.let { stringResource(it) }
+    val errorMsg = (registerState as? RegisterViewModel.RegisterUiState.Error)
+        ?.msgResId?.let { stringResource(it) }
 
     Column(
         modifier = Modifier
