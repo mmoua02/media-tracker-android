@@ -70,6 +70,7 @@ fun RegisterScreen(
     val registerState   by viewModel.registerState.collectAsState()
 
     val focusManager = LocalFocusManager.current
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(registerState) {
         if (registerState is RegisterViewModel.RegisterUiState.Success) {
