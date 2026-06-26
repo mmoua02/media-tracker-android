@@ -10,4 +10,7 @@ interface UserApiService {
 
     @POST("users")
     suspend fun createUser(@Body body: RegisterRequest): Response<Unit>
+
+    @POST("tokens")
+    suspend fun login(@Body body: LoginRequest): Response<AuthResponse>
 }

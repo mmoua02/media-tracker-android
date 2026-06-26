@@ -70,7 +70,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.firestore)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converters.kotlinx.serializtion)
     implementation(libs.kotlinx.serialization.json)
