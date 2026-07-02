@@ -9,6 +9,7 @@ import edu.metrostate.ics342.mediatracker.data.SessionRepository
 import edu.metrostate.ics342.mediatracker.data.UserRepository
 import edu.metrostate.ics342.mediatracker.data.datastore.DefaultSessionRepository
 import edu.metrostate.ics342.mediatracker.data.network.DefaultUserRepository
+import edu.metrostate.ics342.mediatracker.data.network.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val userRepository: UserRepository = DefaultUserRepository()
+    private val userRepository: DefaultUserRepository = DefaultUserRepository(service = RetrofitInstance.userApiService)
     private val sessionRepository: SessionRepository = DefaultSessionRepository(application)
 
     sealed class AuthUiState {
