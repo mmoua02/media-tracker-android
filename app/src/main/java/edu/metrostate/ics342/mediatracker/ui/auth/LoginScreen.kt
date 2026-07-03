@@ -1,8 +1,12 @@
 package edu.metrostate.ics342.mediatracker.ui.auth
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.SmartDisplay
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -56,10 +60,16 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Icon(
+                imageVector = Icons.Outlined.SmartDisplay,
+                contentDescription = "Logo",
+                modifier = Modifier.size(64.dp),
+                tint = MaterialTheme.colorScheme.primary)
             Text(
                 stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineMedium,
@@ -140,12 +150,11 @@ fun LoginScreen(
                     Text(stringResource(R.string.register_prompt))
                 }
             }
-
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier  = Modifier.align(Alignment.BottomCenter)
-            )
         }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier  = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 

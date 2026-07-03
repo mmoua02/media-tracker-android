@@ -2,6 +2,7 @@ package edu.metrostate.ics342.mediatracker.data.network
 
 import edu.metrostate.ics342.mediatracker.data.SessionRepository
 import edu.metrostate.ics342.mediatracker.data.model.Media
+import kotlin.collections.emptyList
 
 data class MediaPage(
     val items: List<Media>,
@@ -14,14 +15,18 @@ class DefaultMediaRepository(sessionRepository: SessionRepository) {
     private val api = RetrofitInstance.mediaApiService(sessionRepository)
 
     suspend fun search(query: String, type: String?, after: String?): MediaPage {
-        val response = api.searchMedia(
+
+        val response: retrofit2.Response<List<Media>> = api.searchMedia(
             query = query.ifBlank { null },
             type  = type?.ifBlank { null },
             after = after
         )
-        val items      = response.body() ?: emptyList()
+
+
+        val items = response.body() ?: emptyList()
         val nextCursor = response.headers()["X-Next-Cursor"]
-        val hasMore    = response.headers()["X-Has-More"] == "true"
+        val hasMore = response.headers()["X-Has-More"] == "true"
+
         return MediaPage(items, nextCursor, hasMore)
     }
 }

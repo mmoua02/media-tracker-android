@@ -1,5 +1,6 @@
 package edu.metrostate.ics342.mediatracker.data.network
 
+import edu.metrostate.ics342.mediatracker.data.SessionRepository
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -27,6 +28,16 @@ object RetrofitInstance {
         .build()
 
     val userApiService: UserApiService = retrofit.create(UserApiService::class.java)
+    val mediaApiService: MediaApiService = retrofit.create(MediaApiService::class.java)
 
+    fun mediaApiService(sessionRepository: SessionRepository): MediaApiService {
+        val authClient = client.newBuilder()
+            .addInterceptor(AuthInterceptor(sessionRepository))
+            .build()
+        return retrofit.newBuilder()
+            .client(authClient)
+            .build()
+            .create(MediaApiService::class.java)
+    }
 
 }

@@ -1,5 +1,6 @@
 package edu.metrostate.ics342.mediatracker.data.network
 
+import edu.metrostate.ics342.mediatracker.data.LoginResult
 import edu.metrostate.ics342.mediatracker.data.repository.RegisterResult
 import edu.metrostate.ics342.mediatracker.data.repository.UserRepository
 import okio.IOException
@@ -36,7 +37,7 @@ class DefaultUserRepository (
         }
     }
 
-    override suspend fun login(email: String, password: String): LoginResult {
+    suspend fun login(email: String, password: String): LoginResult {
         return try {
             val response = service.login(
                 LoginRequest(
