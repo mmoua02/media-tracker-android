@@ -1,6 +1,6 @@
 package edu.metrostate.ics342.mediatracker.data
 
-import edu.metrostate.ics342.mediatracker.data.model.UserProfile
+import edu.metrostate.ics342.mediatracker.data.model.User
 
 interface UserRepository {
     suspend fun register(
@@ -24,7 +24,7 @@ sealed interface LoginResult {
     data class Success(
         val accessToken: String,
         val refreshToken: String,
-        val user: UserProfile
+        val user: User
     ) : LoginResult
     data object InvalidCredentials : LoginResult
     data object NetworkError : LoginResult

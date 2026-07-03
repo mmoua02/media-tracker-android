@@ -3,16 +3,15 @@ package edu.metrostate.ics342.mediatracker.ui.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import edu.metrostate.ics342.mediatracker.R
-import edu.metrostate.ics342.mediatracker.data.repository.UserRepository
+import edu.metrostate.ics342.mediatracker.data.RegisterResult
 import edu.metrostate.ics342.mediatracker.data.network.DefaultUserRepository
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class RegisterViewModel (
-    private val userRepository: UserRepository = DefaultUserRepository()
+    private val userRepository: DefaultUserRepository = DefaultUserRepository()
 ): ViewModel() {
 
     sealed class RegisterUiState {
@@ -60,7 +59,6 @@ class RegisterViewModel (
     fun onRegisterClick() {
         viewModelScope.launch {
             _registerState.value = RegisterUiState.Loading
-            delay(800)
 
             val hasEmptyFields = _displayName.value.isBlank() ||
                     _username.value.isBlank() ||
@@ -78,7 +76,24 @@ class RegisterViewModel (
                 return@launch
             }
 
+            // Bypassing real registration for emulator testing
             _registerState.value = RegisterUiState.Success
+            /*
+            val result = userRepository.register(
+                email       = _email.value,
+                password    = _password.value,
+                username    = _username.value,
+                displayName = _displayName.value
+            )
+
+            when (result) {
+                RegisterResult.Success      -> _registerState.value = RegisterUiState.Success
+                RegisterResult.Conflict     -> _registerState.value = RegisterUiState.Error(R.string.error_email_or_username_taken)
+                RegisterResult.NetworkError  -> _registerState.value = RegisterUiState.Error(R.string.error_network)
+                RegisterResult.UnknownError  -> _registerState.value = RegisterUiState.Error(R.string.error_generic)
+                else -> _registerState.value = RegisterUiState.Error(R.string.error_generic)
+            }
+            */
         }
     }
 

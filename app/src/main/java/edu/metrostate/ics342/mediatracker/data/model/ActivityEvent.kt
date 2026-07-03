@@ -17,7 +17,7 @@ data class ActivityEvent(
     val rating: Int? = null,
     val reviewText: String? = null,
     val createdAt: String,
-    val user: UserProfile? = null,
+    val user: User? = null,
     val media: Media? = null
 )
 

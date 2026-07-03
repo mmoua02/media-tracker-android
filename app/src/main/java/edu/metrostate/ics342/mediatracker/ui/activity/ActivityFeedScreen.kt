@@ -20,6 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import edu.metrostate.ics342.mediatracker.data.model.ActivityEvent
 import edu.metrostate.ics342.mediatracker.data.model.descriptionText
+import edu.metrostate.ics342.mediatracker.ui.components.AppCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,14 +59,11 @@ private fun ActivityCard(
     onMediaClick: () -> Unit,
     onUserClick: () -> Unit
 ) {
-    Card(
+    AppCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
-            .clickable { onMediaClick() },
-        shape     = RoundedCornerShape(12.dp),
-        colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable { onMediaClick() }
     ) {
         Row(
             modifier = Modifier.padding(12.dp),

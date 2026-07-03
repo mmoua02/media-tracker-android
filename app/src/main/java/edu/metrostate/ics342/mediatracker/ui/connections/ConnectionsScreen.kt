@@ -16,7 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import edu.metrostate.ics342.mediatracker.data.FakeMediaRepository
-import edu.metrostate.ics342.mediatracker.data.model.UserProfile
+import edu.metrostate.ics342.mediatracker.data.model.User
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +71,7 @@ fun ConnectionsScreen(
 
 @Composable
 private fun UserRow(
-    user: UserProfile,
+    user: User,
     onClick: () -> Unit,
     isFollowing: Boolean
 ) {

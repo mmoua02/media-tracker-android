@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import edu.metrostate.ics342.mediatracker.data.FakeMediaRepository
-import edu.metrostate.ics342.mediatracker.data.model.UserProfile
+import edu.metrostate.ics342.mediatracker.data.model.User
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +31,7 @@ fun UserProfileScreen(
     viewModel: ProfileViewModel = viewModel()
 ) {
     // Week 10: Replace this with a real GET /users/{id} call from the ViewModel
-    val user: UserProfile? = remember(userId) { viewModel.loadUserById(userId) }
+    val user: User? = remember(userId) { viewModel.loadUserById(userId) }
         ?: FakeMediaRepository.followers.find { it.id == userId }
         ?: FakeMediaRepository.following.find { it.id == userId }
 
