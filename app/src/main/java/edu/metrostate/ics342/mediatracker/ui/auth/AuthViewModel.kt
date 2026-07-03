@@ -44,14 +44,20 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun onLoginClick() {
         viewModelScope.launch {
             _loginState.value = AuthUiState.Loading
-            if (_email.value.isBlank() || _password.value.isBlank()) {
+            val trimmedEmail = _email.value.trim()
+            val trimmedPassword = _password.value.trim()
+
+            if (trimmedEmail.isBlank() || trimmedPassword.isBlank()) {
                 _loginState.value = AuthUiState.Error(R.string.error_empty_credentials)
                 return@launch
             }
 
+            // Bypassing real login for emulator testing
+            _loginState.value = AuthUiState.Success
+            /*
             val result = userRepository.login(
-                email    = _email.value,
-                password = _password.value
+                email    = trimmedEmail,
+                password = trimmedPassword
             )
 
             when (result) {
@@ -67,6 +73,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 LoginResult.NetworkError       -> _loginState.value = AuthUiState.Error(R.string.error_network)
                 LoginResult.UnknownError       -> _loginState.value = AuthUiState.Error(R.string.error_generic)
             }
+            */
         }
     }
 

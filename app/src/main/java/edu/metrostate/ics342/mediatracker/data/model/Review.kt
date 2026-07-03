@@ -6,6 +6,6 @@ data class Review(
     val rating: Int,
     val reviewText: String? = null,
     val createdAt: String,
-    val user: UserProfile? = null,
+    val user: User? = null,
     val media: Media? = null
 )

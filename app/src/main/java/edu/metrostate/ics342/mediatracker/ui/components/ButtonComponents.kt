@@ -11,8 +11,8 @@ fun AppButtonFilled(onClick: () -> Unit, text: String, modifier: Modifier = Modi
     Button(
         onClick = onClick,
         modifier = modifier,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp)
+        shape = MaterialTheme.shapes.medium
     ) {
-        Text(text = text)
+        Text(text = text, style = MaterialTheme.typography.titleMedium)
     }
 }

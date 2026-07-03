@@ -39,14 +39,13 @@ class DefaultUserRepository (
 
     suspend fun login(email: String, password: String): LoginResult {
         return try {
-            val response = service.login(
-                LoginRequest(
-                    email        = email,
-                    password     = password,
-                    clientId     = ApiConstants.CLIENT_ID,
-                    clientSecret = ApiConstants.CLIENT_SECRET
-                )
+            val response = service.getTokens(
+                clientId     = ApiConstants.CLIENT_ID,
+                clientSecret = ApiConstants.CLIENT_SECRET,
+                email        = email,
+                password     = password
             )
+
             when (response.code()) {
                 200  -> {
                     val body = response.body()!!

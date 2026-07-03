@@ -18,7 +18,8 @@ data class Media(
     val averageRating: Float = 0f,
     val ratingCount: Int = 0,
     val genres: List<String> = emptyList()
-)
+) {
+}
 
 /** Returns a human-readable credit line appropriate for the media type. */
 fun Media.creatorCredit(context: Context): String = when (mediaType) {

@@ -3,15 +3,15 @@ package edu.metrostate.ics342.mediatracker.ui.profile
 import androidx.lifecycle.ViewModel
 import edu.metrostate.ics342.mediatracker.data.FakeMediaRepository
 import edu.metrostate.ics342.mediatracker.data.model.LibraryItem
-import edu.metrostate.ics342.mediatracker.data.model.UserProfile
+import edu.metrostate.ics342.mediatracker.data.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class ProfileViewModel : ViewModel() {
 
-    private val _currentUser = MutableStateFlow<UserProfile?>(null)
-    val currentUser: StateFlow<UserProfile?> = _currentUser.asStateFlow()
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
     private val _libraryPreview = MutableStateFlow<List<LibraryItem>>(emptyList())
     val libraryPreview: StateFlow<List<LibraryItem>> = _libraryPreview.asStateFlow()
@@ -46,7 +46,7 @@ class ProfileViewModel : ViewModel() {
         )
     }
 
-    fun loadUserById(userId: String): UserProfile? {
+    fun loadUserById(userId: String): User? {
         // TODO (Week 10): Call GET /users/{id} with Retrofit
         return FakeMediaRepository.followers.find { it.id == userId }
             ?: FakeMediaRepository.following.find { it.id == userId }

@@ -10,7 +10,7 @@ import edu.metrostate.ics342.mediatracker.data.model.*
  */
 object FakeMediaRepository {
 
-    val currentUser = UserProfile(
+    val currentUser = User(
         id           = "user-001",
         email        = "alex@example.com",
         username     = "alexreads",
@@ -75,10 +75,10 @@ object FakeMediaRepository {
             "2024-01-20T10:00:00Z", "2024-01-20T10:00:00Z", mediaList[7]),
     )
 
-    private val userJordan = UserProfile("user-002", "j@example.com", "jsmith",   "Jordan Smith",  followerCount = 5,  followingCount = 10)
-    private val userPriya  = UserProfile("user-003", "p@example.com", "priya_r", "Priya Patel",   followerCount = 23, followingCount = 15)
-    private val userMarco  = UserProfile("user-004", "m@example.com", "mramos",  "Marco Ramos",   followerCount = 8,  followingCount = 4)
-    private val userSarah  = UserProfile("user-005", "s@example.com", "sarahk",  "Sarah Kim",     followerCount = 31, followingCount = 22)
+    private val userJordan = User("user-002", "j@example.com", "jsmith",   "Jordan Smith",  followerCount = 5,  followingCount = 10)
+    private val userPriya  = User("user-003", "p@example.com", "priya_r", "Priya Patel",   followerCount = 23, followingCount = 15)
+    private val userMarco  = User("user-004", "m@example.com", "mramos",  "Marco Ramos",   followerCount = 8,  followingCount = 4)
+    private val userSarah  = User("user-005", "s@example.com", "sarahk",  "Sarah Kim",     followerCount = 31, followingCount = 22)
 
     val activityFeed = listOf(
         ActivityEvent(1, "user-002", "finished", 5, createdAt = "2024-01-22T14:30:00Z",
