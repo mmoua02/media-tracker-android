@@ -1,11 +1,14 @@
 package edu.metrostate.ics342.mediatracker.data.network
 
+import edu.metrostate.ics342.mediatracker.data.model.ActivityEvent
 import edu.metrostate.ics342.mediatracker.data.model.LibraryItem
 import edu.metrostate.ics342.mediatracker.data.model.Media
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -25,5 +28,29 @@ interface MediaApiService {
     suspend fun getLibraryItem(@Path("mediaId") mediaId: Int): Response<LibraryItem>
 
     @POST("library")
-    suspend fun addToLibrary(@Body body: Map<String, Int>): Response<Unit>
+    suspend fun addToLibrary(@Body body: Map<String, @JvmSuppressWildcards Any>): Response<Unit>
+
+    @PUT("library/{mediaId}")
+    suspend fun updateLibraryStatus(
+        @Path("mediaId") mediaId: Int,
+        @Body body: Map<String, String>
+    ): Response<Unit>
+
+    @DELETE("library/{mediaId}")
+    suspend fun removeFromLibrary(@Path("mediaId") mediaId: Int): Response<Unit>
+
+    @GET("favorites/{mediaId}")
+    suspend fun getFavoriteItem(@Path("mediaId") mediaId: Int): Response<Unit>
+
+    @POST("favorites")
+    suspend fun addToFavorites(@Body body: Map<String, Int>): Response<Unit>
+
+    @DELETE("favorites/{mediaId}")
+    suspend fun removeFromFavorites(@Path("mediaId") mediaId: Int): Response<Unit>
+
+    @GET("library")
+    suspend fun getLibrary(): Response<List<LibraryItem>>
+
+    @GET("activity")
+    suspend fun getActivityFeed(): Response<List<ActivityEvent>>
 }
