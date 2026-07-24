@@ -19,14 +19,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import edu.metrostate.ics342.mediatracker.data.model.LibraryItem
 import edu.metrostate.ics342.mediatracker.data.model.LibraryStatus
 import edu.metrostate.ics342.mediatracker.data.model.creatorCredit
-import edu.metrostate.ics342.mediatracker.ui.detail.MediaDetailScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,108 +32,135 @@ fun LibraryScreen(
     onMediaClick: (Int) -> Unit,
     viewModel: LibraryViewModel = viewModel()
 ) {
-    val items     by viewModel.libraryItems.collectAsState()
+    val items by viewModel.libraryItems.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val selectedStatus by viewModel.filterState.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
-    var selectedType   by rememberSaveable { mutableStateOf("all") }
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(title = { Text(stringResource(edu.metrostate.ics342.mediatracker.R.string.library_title)) })
+    LaunchedEffect(Unit) {
+        viewModel.loadLibrary()
+    }
 
-        Row(
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+        }
+    }
+
+    var selectedType by rememberSaveable { mutableStateOf("all") }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            TopAppBar(title = { Text(stringResource(edu.metrostate.ics342.mediatracker.R.string.library_title)) })
+        }
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .horizontalScroll( state = rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
-            listOf(
-                "all"   to edu.metrostate.ics342.mediatracker.R.string.filter_all,
-                "book"  to edu.metrostate.ics342.mediatracker.R.string.filter_books,
-                "movie" to edu.metrostate.ics342.mediatracker.R.string.filter_movies,
-                "show"  to edu.metrostate.ics342.mediatracker.R.string.filter_shows
-
-            )
-                .forEach { (key, labelRes) ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                listOf(
+                    "all" to edu.metrostate.ics342.mediatracker.R.string.filter_all,
+                    "book" to edu.metrostate.ics342.mediatracker.R.string.filter_books,
+                    "movie" to edu.metrostate.ics342.mediatracker.R.string.filter_movies,
+                    "show" to edu.metrostate.ics342.mediatracker.R.string.filter_shows
+                ).forEach { (key, labelRes) ->
                     FilterChip(
                         selected = selectedType == key,
-                        onClick  = { selectedType = key },
-                        label    = { Text(stringResource(labelRes)) }
+                        onClick = { selectedType = key },
+                        label = { Text(stringResource(labelRes)) }
                     )
                 }
-        }
-
-        SingleChoiceSegmentedButtonRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp)
-        ) {
-            LibraryStatus.values().forEachIndexed { index, status ->
-                SegmentedButton(
-                    shape    = SegmentedButtonDefaults.itemShape(
-                        index = index, count = LibraryStatus.values().size),
-                    selected = selectedStatus == status,
-                    onClick  = { viewModel.updateFilter(status) },
-                    label    = { Text(stringResource(status.labelRes)) }
-                )
             }
-        }
 
-        HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
-
-        if (isLoading) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-            return@Column
-        }
-
-        val filteredItems = items
-            .filter { it.status == selectedStatus }
-            .filter { selectedType == "all" || it.media.mediaType == selectedType }
-
-        if (filteredItems.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(32.dp),
-                contentAlignment = Alignment.Center
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
             ) {
-                Text(
-                    stringResource(edu.metrostate.ics342.mediatracker.R.string.library_empty),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
+                LibraryStatus.values().forEachIndexed { index, status ->
+                    SegmentedButton(
+                        shape = SegmentedButtonDefaults.itemShape(
+                            index = index, count = LibraryStatus.values().size
+                        ),
+                        selected = selectedStatus == status,
+                        onClick = { viewModel.updateFilter(status) },
+                        label = { Text(stringResource(status.labelRes)) }
+                    )
+                }
             }
-            return@Column
-        }
 
-        Text(
-            if (filteredItems.size == 1) stringResource(edu.metrostate.ics342.mediatracker.R.string.library_item_count, filteredItems.size)
-            else stringResource(edu.metrostate.ics342.mediatracker.R.string.library_items_count, filteredItems.size),
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            style    = MaterialTheme.typography.labelMedium,
-            color    = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+            HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
 
-        LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(filteredItems, key = { it.mediaId }) { item ->
-                LibraryItemCard(
-                    item           = item,
-                    onClick        = { onMediaClick(item.mediaId) },
-                    onRemove       = { viewModel.removeItem(item.mediaId) },
-                    onStatusChange = { newStatus -> viewModel.updateStatus(item.mediaId, newStatus) }
-                )
+            if (isLoading && items.isEmpty()) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                val filteredItems = items
+                    .filter { it.status == selectedStatus }
+                    .filter { selectedType == "all" || it.media.mediaType == selectedType }
+
+                if (filteredItems.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = when(selectedStatus) {
+                                LibraryStatus.WANT_TO -> "Nothing in 'Want To' yet."
+                                LibraryStatus.IN_PROGRESS -> "Nothing in 'In Progress' yet."
+                                LibraryStatus.FINISHED -> "Nothing in 'Finished' yet."
+                            },
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                } else {
+                    Text(
+                        text = if (filteredItems.size == 1) 
+                            stringResource(edu.metrostate.ics342.mediatracker.R.string.library_item_count, filteredItems.size)
+                        else 
+                            stringResource(edu.metrostate.ics342.mediatracker.R.string.library_items_count, filteredItems.size),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    LazyColumn(
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(filteredItems, key = { it.mediaId }) { item ->
+                            LibraryItemCard(
+                                item = item,
+                                onClick = { onMediaClick(item.mediaId) },
+                                onRemove = { viewModel.removeItem(item.mediaId) },
+                                onStatusChange = { newStatus -> viewModel.updateStatus(item.mediaId, newStatus) }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun LibraryItemCard(
+fun LibraryItemCard(
     item: LibraryItem,
     onClick: () -> Unit,
     onRemove: () -> Unit,
@@ -152,7 +177,7 @@ private fun LibraryItemCard(
                 Column {
                     LibraryStatus.values().forEach { s ->
                         TextButton(
-                            onClick  = { onStatusChange(s); statusDialogVisible = false },
+                            onClick = { onStatusChange(s); statusDialogVisible = false },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(s.labelRes)) }
                     }
@@ -160,14 +185,18 @@ private fun LibraryItemCard(
             },
             confirmButton = {},
             dismissButton = {
-                TextButton(onClick = { statusDialogVisible = false }) { Text(stringResource(edu.metrostate.ics342.mediatracker.R.string.settings_cancel_button)) }
+                TextButton(onClick = { statusDialogVisible = false }) { 
+                    Text(stringResource(edu.metrostate.ics342.mediatracker.R.string.settings_cancel_button)) 
+                }
             }
         )
     }
 
     Card(
-        modifier  = Modifier.fillMaxWidth().clickable { onClick() },
-        shape     = RoundedCornerShape(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -179,19 +208,25 @@ private fun LibraryItemCard(
             ) {
                 if (item.media.coverUrl != null) {
                     AsyncImage(
-                        model             = item.media.coverUrl,
+                        model = item.media.coverUrl,
                         contentDescription = item.media.title,
-                        contentScale      = ContentScale.Crop,
-                        modifier          = Modifier.fillMaxSize()
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    Surface(color = MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier.fillMaxSize()) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(when (item.media.mediaType) {
-                                "book" -> "📖"; "movie" -> "🎬"; "show" -> "📺"
-                                else -> "?"
-                            }, style = MaterialTheme.typography.titleLarge)
+                            Text(
+                                when (item.media.mediaType) {
+                                    "book" -> "📖"
+                                    "movie" -> "🎬"
+                                    "show" -> "📺"
+                                    else -> "?"
+                                }, style = MaterialTheme.typography.titleLarge
+                            )
                         }
                     }
                 }
@@ -200,35 +235,50 @@ private fun LibraryItemCard(
             Spacer(Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(item.media.title, style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold, maxLines = 2)
+                Text(
+                    item.media.title, style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold, maxLines = 2
+                )
                 Spacer(Modifier.height(2.dp))
-                Text(item.media.creatorCredit(LocalContext.current),
+                Text(
+                    item.media.creatorCredit(LocalContext.current),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Spacer(Modifier.height(6.dp))
                 SuggestionChip(
                     onClick = { statusDialogVisible = true },
-                    label   = { Text(stringResource(item.status.labelRes),
-                        style = MaterialTheme.typography.labelSmall) }
+                    label = {
+                        Text(
+                            stringResource(item.status.labelRes),
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
                 )
             }
 
             Box {
                 IconButton(onClick = { menuExpanded = true }) {
-                    Icon(Icons.Outlined.MoreVert, stringResource(edu.metrostate.ics342.mediatracker.R.string.action_more_options))
+                    Icon(
+                        Icons.Outlined.MoreVert,
+                        stringResource(edu.metrostate.ics342.mediatracker.R.string.action_more_options)
+                    )
                 }
                 DropdownMenu(
-                    expanded         = menuExpanded,
+                    expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false }
                 ) {
                     DropdownMenuItem(
-                        text    = { Text(stringResource(edu.metrostate.ics342.mediatracker.R.string.action_change_status)) },
+                        text = { Text(stringResource(edu.metrostate.ics342.mediatracker.R.string.action_change_status)) },
                         onClick = { menuExpanded = false; statusDialogVisible = true }
                     )
                     DropdownMenuItem(
-                        text    = { Text(stringResource(edu.metrostate.ics342.mediatracker.R.string.action_remove_from_library),
-                            color = MaterialTheme.colorScheme.error) },
+                        text = {
+                            Text(
+                                stringResource(edu.metrostate.ics342.mediatracker.R.string.action_remove_from_library),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        },
                         onClick = { menuExpanded = false; onRemove() }
                     )
                 }
@@ -236,5 +286,3 @@ private fun LibraryItemCard(
         }
     }
 }
-
-

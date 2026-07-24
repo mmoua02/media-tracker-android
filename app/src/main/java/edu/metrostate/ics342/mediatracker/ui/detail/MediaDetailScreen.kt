@@ -6,15 +6,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -26,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.metrostate.ics342.mediatracker.data.model.Media
 import edu.metrostate.ics342.mediatracker.data.model.creatorCredit
@@ -37,38 +37,54 @@ fun MediaDetailScreen(
     onWriteReview: (Int) -> Unit,
     viewModel: MediaDetailViewModel = viewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(mediaId) {
         viewModel.loadMedia(mediaId)
     }
 
-    when (val state = uiState) {
-        is MediaDetailUiState.Loading -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+    LaunchedEffect(uiState) {
+        val state = uiState
+        if (state is MediaDetailUiState.Success && state.error != null) {
+            snackbarHostState.showSnackbar(state.error)
         }
-        is MediaDetailUiState.Error -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(state.message, color = MaterialTheme.colorScheme.error)
-                    Spacer(Modifier.height(8.dp))
-                    Button(onClick = { viewModel.loadMedia(mediaId) }) {
-                        Text("Retry")
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            when (val state = uiState) {
+                is MediaDetailUiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
                     }
                 }
+                is MediaDetailUiState.Error -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(state.message, color = MaterialTheme.colorScheme.error)
+                            Spacer(Modifier.height(8.dp))
+                            Button(onClick = { viewModel.loadMedia(mediaId) }) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                }
+                is MediaDetailUiState.Success -> {
+                    MediaDetailContent(
+                        media = state.media,
+                        isAdded = state.isAdded,
+                        isFavorited = state.isFavorited,
+                        isSaving = state.isSaving,
+                        onNavigateBack = onNavigateBack,
+                        onWriteReview = { onWriteReview(mediaId) },
+                        onAddToLibrary = { viewModel.addToLibrary(mediaId) },
+                        onToggleFavorite = { viewModel.toggleFavorite(mediaId) }
+                    )
+                }
             }
-        }
-        is MediaDetailUiState.Success -> {
-            MediaDetailContent(
-                media = state.media,
-                isAdded = state.isAdded,
-                isSaving = state.isSaving,
-                onNavigateBack = onNavigateBack,
-                onWriteReview = { onWriteReview(mediaId) },
-                onAddToLibrary = { viewModel.addToLibrary(mediaId) }
-            )
         }
     }
 }
@@ -78,10 +94,12 @@ fun MediaDetailScreen(
 fun MediaDetailContent(
     media: Media,
     isAdded: Boolean,
+    isFavorited: Boolean,
     isSaving: Boolean,
     onNavigateBack: () -> Unit,
     onWriteReview: () -> Unit,
-    onAddToLibrary: () -> Unit
+    onAddToLibrary: () -> Unit,
+    onToggleFavorite: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -142,27 +160,47 @@ fun MediaDetailContent(
                 modifier = Modifier.weight(1f),
                 enabled = !isAdded && !isSaving,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isAdded) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+                    containerColor = if (isAdded) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.primary,
+                    contentColor = if (isAdded) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onPrimary
                 )
             ) {
-                if (isSaving) {
+                if (isSaving && !isAdded) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         strokeWidth = 2.dp,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text(if (isAdded) "In Library" else "+ Want To")
+                    if (isAdded) {
+                        Icon(Icons.Default.Check, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("In Library")
+                    } else {
+                        Text("+ Want To")
+                    }
                 }
             }
 
             OutlinedButton(
-                onClick = { },
-                modifier = Modifier.weight(1f)
+                onClick = onToggleFavorite,
+                modifier = Modifier.weight(1f),
+                enabled = !isSaving,
+                colors = if (isFavorited) {
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                } else {
+                    ButtonDefaults.outlinedButtonColors()
+                }
             ) {
-                Icon(Icons.Default.FavoriteBorder, null)
+                Icon(
+                    imageVector = if (isFavorited) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = null,
+                    tint = if (isFavorited) Color.Red else MaterialTheme.colorScheme.primary
+                )
                 Spacer(Modifier.width(8.dp))
-                Text("Save")
+                Text(if (isFavorited) "Saved" else "Save")
             }
         }
 
