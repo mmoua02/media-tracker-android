@@ -9,6 +9,7 @@ import edu.metrostate.ics342.mediatracker.data.fakeSearchResults
 import edu.metrostate.ics342.mediatracker.data.model.LibraryItem
 import edu.metrostate.ics342.mediatracker.data.model.LibraryStatus
 import edu.metrostate.ics342.mediatracker.data.model.Media
+import edu.metrostate.ics342.mediatracker.data.network.QuoteRepository
 import edu.metrostate.ics342.mediatracker.data.network.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,7 @@ sealed class MediaDetailUiState {
         val isFavorited: Boolean = false,
         val isAdded: Boolean = false,
         val isSaving: Boolean = false,
+        val quoteSaving: Boolean = false,
         val error: String? = null
     ) : MediaDetailUiState()
     data class Error (val message: String) : MediaDetailUiState()
@@ -33,6 +35,7 @@ sealed class MediaDetailUiState {
 class MediaDetailViewModel(application: Application) : AndroidViewModel(application) {
     private val sessionRepository = DefaultSessionRepository(application)
     private val api = RetrofitInstance.mediaApiService(sessionRepository)
+    private val quoteRepository = QuoteRepository(sessionRepository)
 
     private val _uiState = MutableStateFlow<MediaDetailUiState>(MediaDetailUiState.Loading)
     val uiState : StateFlow<MediaDetailUiState> = _uiState.asStateFlow()
@@ -59,7 +62,8 @@ class MediaDetailViewModel(application: Application) : AndroidViewModel(applicat
                         media = fakeMedia,
                         libraryStatus = libraryItem?.status,
                         isFavorited = isFavorited,
-                        isAdded = libraryItem != null
+                        isAdded = libraryItem != null,
+                        quoteSaving = false
                     )
                 }.collect { newState ->
                     _uiState.value = newState
@@ -83,7 +87,8 @@ class MediaDetailViewModel(application: Application) : AndroidViewModel(applicat
                     media = media,
                     libraryStatus = libraryStatus,
                     isFavorited = isFavorited,
-                    isAdded = libraryStatus != null
+                    isAdded = libraryStatus != null,
+                    quoteSaving = false
                 )
             } catch (e: Exception) {
                 _uiState.value = MediaDetailUiState.Error(e.localizedMessage ?: "Unknown error occurred")
@@ -111,8 +116,7 @@ class MediaDetailViewModel(application: Application) : AndroidViewModel(applicat
     fun toggleFavorite(mediaId: Int) {
         val currentState = _uiState.value as? MediaDetailUiState.Success ?: return
         val wasFavorited = currentState.isFavorited
-        
-        // Update Fake Repository (UI will update automatically)
+
         FakeMediaRepository.toggleFavorite(mediaId)
 
         viewModelScope.launch {
@@ -123,7 +127,30 @@ class MediaDetailViewModel(application: Application) : AndroidViewModel(applicat
                     api.addToFavorites(mapOf("mediaId" to mediaId))
                 }
             } catch (e: Exception) {
-                // Rollback if needed
+
+            }
+        }
+    }
+
+    /*
+    handle submission of new quotes from detail screen
+     */
+    fun saveQuote(text: String, pageNumber: Int?, isPublic: Boolean) {
+        val mediaId = currentMediaId ?: return
+        val currentState = _uiState.value as? MediaDetailUiState.Success ?: return
+
+        _uiState.value = currentState.copy(quoteSaving = true)
+
+        viewModelScope.launch {
+            try {
+                val response = quoteRepository.createQuote(mediaId, text, pageNumber, isPublic)
+                if (response.isSuccessful) {  // successful code
+                    _uiState.value = currentState.copy(quoteSaving = false, error = "Quote saved successfully")
+                } else { // unsuccessful code
+                    _uiState.value = currentState.copy(quoteSaving = false, error = "Failed to save quote: ${response.message()}")
+                }
+            } catch (e: Exception) { // catch exceptions
+                _uiState.value = currentState.copy(quoteSaving = false, error = e.localizedMessage ?: "Unknown error")
             }
         }
     }

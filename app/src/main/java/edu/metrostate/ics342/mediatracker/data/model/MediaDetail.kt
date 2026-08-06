@@ -31,7 +31,6 @@ data class Media(
 ) {
 }
 
-/** Returns a human-readable credit line appropriate for the media type. */
 fun Media.creatorCredit(context: Context): String = when (mediaType) {
     "book"  -> author   ?: context.getString(R.string.media_unknown_author)
     "movie" -> director ?: context.getString(R.string.media_unknown_director)

@@ -29,6 +29,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.metrostate.ics342.mediatracker.data.model.Media
 import edu.metrostate.ics342.mediatracker.data.model.creatorCredit
+import edu.metrostate.ics342.mediatracker.ui.quotes.AddQuoteDialog
 
 @Composable
 fun MediaDetailScreen(
@@ -39,6 +40,7 @@ fun MediaDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    var showQuoteDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(mediaId) {
         viewModel.loadMedia(mediaId)
@@ -49,6 +51,17 @@ fun MediaDetailScreen(
         if (state is MediaDetailUiState.Success && state.error != null) {
             snackbarHostState.showSnackbar(state.error)
         }
+    }
+
+    if (showQuoteDialog && uiState is MediaDetailUiState.Success) {
+        AddQuoteDialog(
+            onDismiss = { showQuoteDialog = false },
+            onConfirm = { text, page, public ->
+                viewModel.saveQuote(text, page, public)
+                showQuoteDialog = false
+            },
+            isSaving = (uiState as MediaDetailUiState.Success).quoteSaving
+        )
     }
 
     Scaffold(
@@ -80,6 +93,7 @@ fun MediaDetailScreen(
                         isSaving = state.isSaving,
                         onNavigateBack = onNavigateBack,
                         onWriteReview = { onWriteReview(mediaId) },
+                        onAddQuote = { showQuoteDialog = true },
                         onAddToLibrary = { viewModel.addToLibrary(mediaId) },
                         onToggleFavorite = { viewModel.toggleFavorite(mediaId) }
                     )
@@ -98,6 +112,7 @@ fun MediaDetailContent(
     isSaving: Boolean,
     onNavigateBack: () -> Unit,
     onWriteReview: () -> Unit,
+    onAddQuote: () -> Unit,
     onAddToLibrary: () -> Unit,
     onToggleFavorite: () -> Unit
 ) {
@@ -235,7 +250,10 @@ fun MediaDetailContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("Reviews (${media.reviewCount})", style = MaterialTheme.typography.titleMedium)
-            TextButton(onClick = onWriteReview) { Text("+ Write Review") }
+            Row {
+                TextButton(onClick = onAddQuote) { Text("+ Add Quote") }
+                TextButton(onClick = onWriteReview) { Text("+ Write Review") }
+            }
         }
 
         // Placeholder for reviews
