@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 sealed class QuoteUiState {
-    object Loading : QuoteUiState()
+    data object Loading : QuoteUiState()
     data class Success(val quotes: List<Quote>) : QuoteUiState()
     data class Error(val message: String) : QuoteUiState()
 }
@@ -24,7 +24,15 @@ class QuoteViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow<QuoteUiState>(QuoteUiState.Loading)
     val uiState: StateFlow<QuoteUiState> = _uiState.asStateFlow()
 
+    private val _currentFilterPublic = MutableStateFlow<Boolean?>(null)
+    val currentFilterPublic: StateFlow<Boolean?> = _currentFilterPublic.asStateFlow()
+
     init {
+        loadQuotes()
+    }
+
+    fun setFilter(public: Boolean?) {
+        _currentFilterPublic.value = public
         loadQuotes()
     }
 
@@ -32,10 +40,35 @@ class QuoteViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _uiState.value = QuoteUiState.Loading
             try {
-                val quotePage = quoteRepository.getQuotes(public = null)
+                val quotePage = quoteRepository.getQuotes(public = _currentFilterPublic.value)
                 _uiState.value = QuoteUiState.Success(quotePage.items)
             } catch (e: Exception) {
                 _uiState.value = QuoteUiState.Error(e.localizedMessage ?: "Unknown error")
+            }
+        }
+    }
+
+    fun deleteQuote(id: Int) {
+        viewModelScope.launch {
+            val result = quoteRepository.deleteQuote(id)
+            result.onSuccess {
+                loadQuotes()
+            }
+        }
+    }
+
+    fun toggleLike(quote: Quote) {
+        viewModelScope.launch {
+            val result = if (quote.isLiked) {
+                quoteRepository.unlikeQuote(quote.id)
+            } else {
+                quoteRepository.likeQuote(quote.id)
+            }
+            
+            result.onSuccess {
+                loadQuotes()
+            }.onFailure { e ->
+
             }
         }
     }

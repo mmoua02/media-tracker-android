@@ -5,14 +5,10 @@ import androidx.compose.material.icons.automirrored.filled.Feed
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.automirrored.outlined.Feed
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.filled.Feed
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.Notes
+import androidx.compose.material.icons.automirrored.outlined.Notes
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Feed
-import androidx.compose.material.icons.outlined.Group
-import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
@@ -24,7 +20,6 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavDestination.Companion.hierarchy
 
 data class BottomNavItem(
     val route: String,
@@ -43,9 +38,9 @@ val bottomNavItems = listOf(
     BottomNavItem(Routes.LIBRARY, edu.metrostate.ics342.mediatracker.R.string.nav_library,
         selectedIcon   = { Icon(Icons.AutoMirrored.Filled.MenuBook,   stringResource(edu.metrostate.ics342.mediatracker.R.string.nav_library)) },
         unselectedIcon = { Icon(Icons.AutoMirrored.Outlined.MenuBook, stringResource(edu.metrostate.ics342.mediatracker.R.string.nav_library)) }),
-    BottomNavItem(Routes.CONNECTIONS, edu.metrostate.ics342.mediatracker.R.string.nav_people,
-        selectedIcon   = { Icon(Icons.Filled.Group,    stringResource(edu.metrostate.ics342.mediatracker.R.string.nav_people)) },
-        unselectedIcon = { Icon(Icons.Outlined.Group,  stringResource(edu.metrostate.ics342.mediatracker.R.string.nav_people)) }),
+    BottomNavItem(Routes.QUOTES, edu.metrostate.ics342.mediatracker.R.string.nav_quotes,
+        selectedIcon   = { Icon(Icons.AutoMirrored.Filled.Notes,    stringResource(edu.metrostate.ics342.mediatracker.R.string.nav_quotes)) },
+        unselectedIcon = { Icon(Icons.AutoMirrored.Outlined.Notes,  stringResource(edu.metrostate.ics342.mediatracker.R.string.nav_quotes)) }),
     BottomNavItem(Routes.MY_PROFILE, edu.metrostate.ics342.mediatracker.R.string.nav_profile,
         selectedIcon   = { Icon(Icons.Filled.Person,   stringResource(edu.metrostate.ics342.mediatracker.R.string.nav_profile)) },
         unselectedIcon = { Icon(Icons.Outlined.Person, stringResource(edu.metrostate.ics342.mediatracker.R.string.nav_profile)) }),

@@ -20,16 +20,21 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import edu.metrostate.ics342.mediatracker.ui.components.QuoteCard
+import edu.metrostate.ics342.mediatracker.ui.quotes.QuoteUiState
+import edu.metrostate.ics342.mediatracker.ui.quotes.QuoteViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyProfileScreen(
     onEditProfile: () -> Unit,
     onSettingsClick: () -> Unit,
-    viewModel: ProfileViewModel = viewModel()
+    viewModel: ProfileViewModel = viewModel(),
+    quoteViewModel: QuoteViewModel = viewModel()
 ) {
     val user    by viewModel.currentUser.collectAsStateWithLifecycle()
     val library by viewModel.libraryPreview.collectAsState()
+    val quoteState by quoteViewModel.uiState.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
@@ -158,6 +163,41 @@ fun MyProfileScreen(
                             Text(stringResource(item.status.labelRes),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+            HorizontalDivider()
+            Spacer(Modifier.height(16.dp))
+
+            Text("My Quotes", style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.align(Alignment.Start))
+
+            Spacer(Modifier.height(8.dp))
+
+            when (val state = quoteState) {
+                is QuoteUiState.Loading -> {
+                    CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                }
+                is QuoteUiState.Error -> {
+                    Text(
+                        text = "Error loading quotes: ${state.message}",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                is QuoteUiState.Success -> {
+                    if (state.quotes.isEmpty()) {
+                        Text(
+                            text = "No quotes saved yet.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        state.quotes.forEach { quote ->
+                            QuoteCard(quote = quote)
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 package edu.metrostate.ics342.mediatracker.ui.detail
 
+import android.icu.text.CaseMap
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -29,7 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.metrostate.ics342.mediatracker.data.model.Media
 import edu.metrostate.ics342.mediatracker.data.model.creatorCredit
-import edu.metrostate.ics342.mediatracker.ui.quotes.AddQuoteDialog
+import edu.metrostate.ics342.mediatracker.ui.quotes.AddQuoteBottomSheet
 
 @Composable
 fun MediaDetailScreen(
@@ -54,13 +55,13 @@ fun MediaDetailScreen(
     }
 
     if (showQuoteDialog && uiState is MediaDetailUiState.Success) {
-        AddQuoteDialog(
+        val successState = uiState as MediaDetailUiState.Success
+        AddQuoteBottomSheet(
+            mediaId = mediaId,
+            mediaTitle = successState.media.title,
             onDismiss = { showQuoteDialog = false },
-            onConfirm = { text, page, public ->
-                viewModel.saveQuote(text, page, public)
-                showQuoteDialog = false
-            },
-            isSaving = (uiState as MediaDetailUiState.Success).quoteSaving
+            viewModel = viewModel,
+            snackbarHostState = snackbarHostState
         )
     }
 
