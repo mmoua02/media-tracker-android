@@ -21,6 +21,7 @@ import edu.metrostate.ics342.mediatracker.ui.library.LibraryScreen
 import edu.metrostate.ics342.mediatracker.ui.profile.EditProfileScreen
 import edu.metrostate.ics342.mediatracker.ui.profile.MyProfileScreen
 import edu.metrostate.ics342.mediatracker.ui.profile.UserProfileScreen
+import edu.metrostate.ics342.mediatracker.ui.quotes.QuoteListScreen
 import edu.metrostate.ics342.mediatracker.ui.review.WriteReviewScreen
 import edu.metrostate.ics342.mediatracker.ui.search.SearchResultsScreen
 import edu.metrostate.ics342.mediatracker.ui.search.SearchScreen
@@ -33,6 +34,7 @@ private val bottomNavRoutes = setOf(
     Routes.LIBRARY,
     Routes.CONNECTIONS,
     Routes.MY_PROFILE,
+    Routes.QUOTES,
 )
 
 @Composable
@@ -155,6 +157,10 @@ fun MediaTrackerNavGraph(navController: NavHostController) {
 
             composable(Routes.EDIT_PROFILE) {
                 EditProfileScreen(onNavigateBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.QUOTES) {
+                QuoteListScreen(onNavigateBack = { navController.popBackStack() })
             }
 
             composable(Routes.CONNECTIONS) {

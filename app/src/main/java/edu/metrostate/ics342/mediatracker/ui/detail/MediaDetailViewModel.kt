@@ -71,7 +71,6 @@ class MediaDetailViewModel(application: Application) : AndroidViewModel(applicat
                 return@launch
             }
 
-            // Fallback to real API (not reactive for now)
             _uiState.value = MediaDetailUiState.Loading
             try {
                 val media = api.getMedia(mediaId)
@@ -100,10 +99,8 @@ class MediaDetailViewModel(application: Application) : AndroidViewModel(applicat
         val currentState = _uiState.value as? MediaDetailUiState.Success ?: return
         val newStatus = LibraryStatus.fromString(status)
         
-        // Update Fake Repository (UI will update automatically via the collector in loadMedia)
         FakeMediaRepository.addToLibrary(currentState.media, newStatus)
 
-        // Also call API in background
         viewModelScope.launch {
             try {
                 api.addToLibrary(mapOf("mediaId" to mediaId, "status" to status))
@@ -135,22 +132,22 @@ class MediaDetailViewModel(application: Application) : AndroidViewModel(applicat
     /*
     handle submission of new quotes from detail screen
      */
-    fun saveQuote(text: String, pageNumber: Int?, isPublic: Boolean) {
-        val mediaId = currentMediaId ?: return
+    fun saveQuote(mediaId: Int, text: String, pageNumber: Int?, isPublic: Boolean, onResult: (Boolean) -> Unit) {
         val currentState = _uiState.value as? MediaDetailUiState.Success ?: return
 
         _uiState.value = currentState.copy(quoteSaving = true)
 
         viewModelScope.launch {
-            try {
-                val response = quoteRepository.createQuote(mediaId, text, pageNumber, isPublic)
-                if (response.isSuccessful) {  // successful code
-                    _uiState.value = currentState.copy(quoteSaving = false, error = "Quote saved successfully")
-                } else { // unsuccessful code
-                    _uiState.value = currentState.copy(quoteSaving = false, error = "Failed to save quote: ${response.message()}")
-                }
-            } catch (e: Exception) { // catch exceptions
-                _uiState.value = currentState.copy(quoteSaving = false, error = e.localizedMessage ?: "Unknown error")
+            val result = quoteRepository.createQuote(mediaId, text, pageNumber, isPublic)
+            result.onSuccess {
+                _uiState.value = currentState.copy(quoteSaving = false)
+                onResult(true)
+            }.onFailure { e ->
+                _uiState.value = currentState.copy(
+                    quoteSaving = false,
+                    error = "Failed to save quote: ${e.message ?: "Unknown error"}"
+                )
+                onResult(false)
             }
         }
     }
